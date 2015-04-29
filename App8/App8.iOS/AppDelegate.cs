@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AddressBook;
 using AddressBookUI;
@@ -37,17 +38,29 @@ namespace App8.iOS
     {
         public void ShowContact(NavigationPage page)
         {
+            var key = DateTime.Now.ToString();
             var newPersonController = new ABNewPersonViewController();
             var person = new ABPerson();
-            person.FirstName = "John";
-            person.LastName = "Doe";
-
+            person.FirstName = "John " + key;
+            person.LastName = "Doe" + key;
+            newPersonController.Title = "This is a test";
 
             newPersonController.DisplayedPerson = person;
-            var controller = page.CreateViewController();
 
-            //controller.NavigationController is null
-            controller.NavigationController.PushViewController(newPersonController, true);            
+            UINavigationController nav = null;
+            foreach (var vc in UIApplication.SharedApplication.Windows[0].RootViewController.ChildViewControllers)
+            {
+                if (vc is UINavigationController)
+                    nav = (UINavigationController)vc;
+            }
+
+            newPersonController.NewPersonComplete += (object sender, ABNewPersonCompleteEventArgs e) =>
+            {
+                nav.DismissModalViewController(true);
+            };
+
+
+            nav.PresentModalViewController(new UINavigationController(newPersonController), true);       
         }
 
         public IList<string> GetAllNames()
